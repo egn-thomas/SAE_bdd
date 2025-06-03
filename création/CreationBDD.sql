@@ -112,9 +112,9 @@ CREATE TABLE emmission_co2 (
     id_pays INT,
     annee INT,
     "emmission_co2(T)" FLOAT,
-    "population_2022" FLOAT,
+    population_2022 FLOAT,
     aire FLOAT,
-    "pourncentage_monde" FLOAT,
+    pourcentage_monde FLOAT,
     densite_km FLOAT,
     FOREIGN KEY (id_pays) REFERENCES pays(id_pays)
 );
