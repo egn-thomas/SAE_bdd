@@ -1,0 +1,5 @@
+pays : id_pays, nom_pays
+catastrophe_naturel : id_catastrophe, annee, nom_pays, groupe_catastrophe, type_catastrophe, sous_type_catastrophe, nombre_catastrophe, total_mort, degats_total(USD), degats_total_reel(USD)
+emmission_co2 : #id_pays, annee, emmissions_co2(T), population_2022, aire, pourcentage_monde, densite_km
+maladie_sol : id_cas, date_cas, #id_pays, type_polluant, concentration_polluant_mg_kg, ph_sol, temperature_c, proportion_mat_organique, type_maladie, severite_maladie, symptome_maladie, guerison
+variation_temperature : #id_pays, mois, Y1961, Y1962, ..., Y2018, Y2019
