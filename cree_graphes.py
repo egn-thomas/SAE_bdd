@@ -20,10 +20,6 @@ def comparer_temperature_catastrophe(df_delta_temp_par_an, df_nbcatastrophe_par_
     df_merged = pd.merge(df_nbcatastrophe_par_an, df_delta_temp_par_an, on="annee", how="inner")
     df_merged.sort_values("annee", inplace=True)
 
-    print(df_delta_temp_par_an)
-    print(df_nbcatastrophe_par_an)
-
-
     fig, ax1 = plt.subplots(figsize=(12, 6))
 
     ax1.set_xlabel("Année")
@@ -75,6 +71,9 @@ def hausse_du_co2(df_co2_par_pays, top_n=12):
     plt.tight_layout()
     plt.show()
 
+
+
+
 if __name__ == "__main__":
 
     df_nbcatastrophe_par_an = pd.read_sql("""
@@ -112,7 +111,7 @@ if __name__ == "__main__":
         """, engine)
     
     df_co2_par_pays = pd.read_sql("""
-        SELECT p.nom_pays, AVG(ec.emmission_co2_t) AS co2_moyen
+        SELECT p.nom_pays, SUM(ec.emmission_co2_t) AS co2_moyen
         FROM emmission_co2 AS ec
         INNER JOIN pays AS p ON ec.id_pays = p.id_pays
         WHERE ec.annee >= 1990
@@ -120,5 +119,6 @@ if __name__ == "__main__":
         ORDER BY AVG(ec.emmission_co2_t) DESC;
         """, engine)
 
-    comparer_temperature_catastrophe(df_delta_temp_par_an, df_nbcatastrophe_par_an, 15)
-    hausse_du_co2(df_co2_par_pays)
+
+    # comparer_temperature_catastrophe(df_delta_temp_par_an, df_nbcatastrophe_par_an, 15)
+    # hausse_du_co2(df_co2_par_pays)

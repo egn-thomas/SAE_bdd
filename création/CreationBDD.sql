@@ -121,6 +121,7 @@ CREATE TABLE emmission_co2 (
 
 -- création mort_pollution_pays
 CREATE TABLE mort_pollution_pays (
+	Id_mort_pollution_pays INT GENERATED ALWAYS AS IDENTITY PRIMARY KEY,
 	id_pays INT,
 	annee INT,
 	pol_air_exterieur INT,
