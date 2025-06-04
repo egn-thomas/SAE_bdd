@@ -2,6 +2,7 @@ import pandas as pd
 from sqlalchemy import create_engine
 import matplotlib.pyplot as plt
 import numpy as np
+import random
 
 host = "localhost"
 port = "5432"
@@ -12,6 +13,7 @@ password = "user1"
 engine = create_engine(f"postgresql+psycopg2://{user}:{password}@{host}:{port}/{db}")
 
 def comparer_temperature_catastrophe(df_delta_temp_par_an, df_nbcatastrophe_par_an, top_n):
+
     df_nbcatastrophe_par_an["annee"] = df_nbcatastrophe_par_an["annee"].astype(str)
     df_delta_temp_par_an["annee"] = df_delta_temp_par_an["annee"].astype(str)
 
@@ -25,28 +27,60 @@ def comparer_temperature_catastrophe(df_delta_temp_par_an, df_nbcatastrophe_par_
     fig, ax1 = plt.subplots(figsize=(12, 6))
 
     ax1.set_xlabel("Année")
-    ax1.set_ylabel("Nombre de catastrophes", color="tab:blue")
+    ax1.set_ylabel("Nombre de catastrophes", color="#13AD1A")
     ax1.bar(df_merged["annee"], df_merged["nombre_de_catastrophes"], color="#13AD1A", alpha=0.6)
     ax1.tick_params(axis='y', labelcolor="#13AD1A")
 
     ax2 = ax1.twinx()
-    ax2.set_ylabel("Variation de température (°C)", color="tab:red")
+    ax2.set_ylabel("Variation de température (°C)", color="#042E0B")
     ax2.plot(df_merged["annee"], df_merged["variation_temp"], color="#042E0B", marker="o")
     ax2.tick_params(axis='y', labelcolor="#042E0B")
 
-    plt.title("Nombre de catastrophes vs Variation de température moyenne")
+    plt.title("Nombre de catastrophes et variation de température moyenne depuis 1961", fontsize=12)
     plt.xticks(rotation=45)
     plt.tight_layout()
     plt.grid(True)
     plt.show()
 
+def hausse_du_co2(df_co2_par_pays, top_n=12):
+
+    df_sorted = df_co2_par_pays.sort_values(by="co2_moyen", ascending=False).reset_index(drop=True)
+
+    df_top = df_sorted.head(top_n)
+    df_autres = df_sorted.iloc[top_n:]
+
+    autres_total = df_autres["co2_moyen"].sum()
+
+    if autres_total > 0:
+        df_autres_row = pd.DataFrame([{
+            "nom_pays": "Autres",
+            "co2_moyen": autres_total
+        }])
+        df_top = pd.concat([df_top, df_autres_row], ignore_index=True)
+
+    fig, ax = plt.subplots(figsize=(10, 8))
+    couleurs = ["#cfffd7", "#71d381", "#81e091", "#61c572", "#44a554", "#278336", "#1D772C", '#cfffd7', '#71d381', '#81e091', '#61c572', '#44a554', '#278336']
+    random.shuffle(couleurs)
+    ax.pie(
+        df_top["co2_moyen"],
+        labels=df_top["nom_pays"],
+        autopct='%1.1f%%',
+        startangle=140,
+        colors=couleurs[:len(df_top)],
+        textprops={'fontsize': 12},
+    )
+
+    ax.set_title("Répartition des émissions de CO₂ par pays depuis 1990", y=1.05)
+    plt.axis('equal')
+    plt.tight_layout()
+    plt.show()
 
 if __name__ == "__main__":
 
     df_nbcatastrophe_par_an = pd.read_sql("""
         SELECT c.annee, COUNT(c.id_catastrophe) AS nombre_de_catastrophes
         FROM catastrophe_naturel AS c
-        GROUP BY annee;        
+        GROUP BY annee;
         """, engine)
     
     df_delta_temp_par_an = pd.read_sql("""
@@ -76,6 +110,15 @@ if __name__ == "__main__":
         UNION
         SELECT '2019', AVG(y2019) FROM variation_temperature
         """, engine)
+    
+    df_co2_par_pays = pd.read_sql("""
+        SELECT p.nom_pays, AVG(ec.emmission_co2_t) AS co2_moyen
+        FROM emmission_co2 AS ec
+        INNER JOIN pays AS p ON ec.id_pays = p.id_pays
+        WHERE ec.annee >= 1990
+        GROUP BY p.nom_pays
+        ORDER BY AVG(ec.emmission_co2_t) DESC;
+        """, engine)
 
     comparer_temperature_catastrophe(df_delta_temp_par_an, df_nbcatastrophe_par_an, 15)
-    comparer_nbmalade_pollution(df_maladie_par_pays, df_emmission_par_pays, 15)
+    hausse_du_co2(df_co2_par_pays)
