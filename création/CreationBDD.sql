@@ -86,8 +86,8 @@ CREATE TABLE catastrophe_naturel (
     sous_type_catastrophe VARCHAR(100),
     nombre_catastrophe INT,
     total_mort INT,
-    "degat_total(USD)" BIGINT,
-    "degat_total_reel(USD)" BIGINT
+    degat_total_USD BIGINT,
+    degat_total_reel_USD BIGINT
 );
 
 -- création maladie_sol
@@ -111,7 +111,7 @@ CREATE TABLE maladie_sol (
 CREATE TABLE emmission_co2 (
     id_pays INT,
     annee INT,
-    "emmission_co2(T)" FLOAT,
+    emmission_co2_T FLOAT,
     population_2022 FLOAT,
     aire FLOAT,
     pourcentage_monde FLOAT,
