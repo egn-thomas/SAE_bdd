@@ -62,6 +62,10 @@ def comparer_temperature_catastrophe(df_delta_temp_par_an, df_nbcatastrophe_par_
     df_merged = pd.merge(df_nbcatastrophe_par_an, df_delta_temp_par_an, on="annee", how="inner")
     df_merged.sort_values("annee", inplace=True)
 
+    print(df_delta_temp_par_an)
+    print(df_nbcatastrophe_par_an)
+
+
     fig, ax1 = plt.subplots(figsize=(12, 6))
 
     ax1.set_xlabel("Année")
@@ -106,31 +110,31 @@ if __name__ == "__main__":
         """, engine)
     
     df_delta_temp_par_an = pd.read_sql("""
-        SELECT 'y1961' AS annee, AVG(y1961) AS variation_temp FROM variation_temperature
+        SELECT '1961' AS annee, AVG(y1961) AS variation_temp FROM variation_temperature
         UNION
-        SELECT 'y1965', AVG(y1965) FROM variation_temperature
+        SELECT '1965', AVG(y1965) FROM variation_temperature
         UNION
-        SELECT 'y1970', AVG(y1970) FROM variation_temperature
+        SELECT '1970', AVG(y1970) FROM variation_temperature
         UNION
-        SELECT 'y1975', AVG(y1975) FROM variation_temperature
+        SELECT '1975', AVG(y1975) FROM variation_temperature
         UNION
-        SELECT 'y1980', AVG(y1980) FROM variation_temperature
+        SELECT '1980', AVG(y1980) FROM variation_temperature
         UNION
-        SELECT 'y1985', AVG(y1985) FROM variation_temperature
+        SELECT '1985', AVG(y1985) FROM variation_temperature
         UNION
-        SELECT 'y1990', AVG(y1990) FROM variation_temperature
+        SELECT '1990', AVG(y1990) FROM variation_temperature
         UNION
-        SELECT 'y1995', AVG(y1995) FROM variation_temperature
+        SELECT '1995', AVG(y1995) FROM variation_temperature
         UNION
-        SELECT 'y2000', AVG(y2000) FROM variation_temperature
+        SELECT '2000', AVG(y2000) FROM variation_temperature
         UNION
-        SELECT 'y2005', AVG(y2005) FROM variation_temperature
+        SELECT '2005', AVG(y2005) FROM variation_temperature
         UNION
-        SELECT 'y2010', AVG(y2010) FROM variation_temperature
+        SELECT '2010', AVG(y2010) FROM variation_temperature
         UNION
-        SELECT 'y2015', AVG(y2015) FROM variation_temperature
+        SELECT '2015', AVG(y2015) FROM variation_temperature
         UNION
-        SELECT 'y2019', AVG(y2019) FROM variation_temperature
+        SELECT '2019', AVG(y2019) FROM variation_temperature
         """, engine)
 
     comparer_temperature_catastrophe(df_delta_temp_par_an, df_nbcatastrophe_par_an, 15)

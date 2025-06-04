@@ -118,3 +118,14 @@ CREATE TABLE emmission_co2 (
     densite_km FLOAT,
     FOREIGN KEY (id_pays) REFERENCES pays(id_pays)
 );
+
+-- création mort_pollution_pays
+CREATE TABLE mort_pollution_pays (
+	id_pays INT,
+	annee INT,
+	pol_air_exterieur INT,
+	eau_dangereuse_polluee INT,
+	pol_interieur_combustible INT, -- interieur pollué par les combustibles (cendres, résidus agricoles, ...)
+	pol_air_interieur INT,
+    FOREIGN KEY (id_pays) REFERENCES pays(id_pays)
+);
