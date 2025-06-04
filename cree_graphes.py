@@ -1,5 +1,6 @@
 import pandas as pd
 from sqlalchemy import create_engine
+import matplotlib.pyplot as plt
 
 host = "localhost"
 port = "5432"
@@ -9,49 +10,41 @@ password = "user1"
 
 engine = create_engine(f"postgresql+psycopg2://{user}:{password}@{host}:{port}/{db}")
 
-import matplotlib.pyplot as plt
+def comparer_nbmalade_pollution(df_maladie_par_pays, df_emmission_par_pays):
+    # Fusion des deux DataFrames sur l'identifiant du pays
+    df_merged = pd.merge(df_emmission_par_pays, df_maladie_par_pays, on="id_pays", how="inner")
 
-def comparer_co2_vs_pollution_sol(df_co2, df_sol):
-    # Préparation des données CO2
-    df_co2_agg = df_co2.groupby("annee")["emmission_co2_t"].sum().reset_index()
-    df_co2_agg.rename(columns={"emmission_co2_t": "co2_total"}, inplace=True)
+    # Tri pour mettre en avant les pays avec le plus de cas
+    df_merged.sort_values("nombre_de_cas", ascending=False, inplace=True)
 
-    # Préparation des données sol (on suppose que pollution = concentration_polluant_mg_kg)
-    df_sol["annee"] = pd.to_datetime(df_sol["date_cas"]).dt.year
-    df_sol_agg = df_sol.groupby("annee")["concentration_polluant_mg_kg"].mean().reset_index()
-    df_sol_agg.rename(columns={"concentration_polluant_mg_kg": "pollution_moyenne_sol"}, inplace=True)
+    # Limiter le graphique aux 15 premiers pays pour plus de lisibilité
+    df_top = df_merged.head(15)
 
-    # Fusion des deux séries sur les années
-    print("Années CO2 :", sorted(df_co2_agg["annee"].unique()))
-    print("Années Pollution sol :", sorted(df_sol_agg["annee"].unique()))
-    df_comparatif = pd.merge(df_co2_agg, df_sol_agg, on="annee", how="inner")
-    print(df_comparatif)
-    print(df_comparatif.info())
+    # Création du graphique à barres avec double axe
+    fig, ax1 = plt.subplots(figsize=(12, 6))
 
-    # Tracé du graphique
-    fig, ax1 = plt.subplots(figsize=(10, 6))
-
-    ax1.set_xlabel("Année")
-    ax1.set_ylabel("Émissions CO₂ _t", color="tab:blue")
-    ax1.plot(df_comparatif["annee"], df_comparatif["co2_total"], label="CO₂ Total", color="tab:blue")
-    ax1.tick_params(axis="y", labelcolor="tab:blue")
+    ax1.set_xlabel("Pays")
+    ax1.set_ylabel("Émissions CO₂ (tonnes)", color="tab:blue")
+    ax1.bar(df_top["nom_pays"], df_top["emmission_co2_t"], color="tab:blue", alpha=0.6, label="CO₂")
+    ax1.tick_params(axis='y', labelcolor='tab:blue')
+    ax1.set_xticklabels(df_top["nom_pays"], rotation=45, ha="right")
 
     ax2 = ax1.twinx()
-    ax2.set_ylabel("Pollution des sols (mg/kg)", color="tab:red")
-    ax2.plot(df_comparatif["annee"], df_comparatif["pollution_moyenne_sol"], label="Pollution des sols", color="tab:red")
-    ax2.tick_params(axis="y", labelcolor="tab:red")
+    ax2.set_ylabel("Nombre de cas de maladies des sols", color="tab:red")
+    ax2.plot(df_top["nom_pays"], df_top["nombre_de_cas"], color="tab:red", marker="o", label="Cas")
+    ax2.tick_params(axis='y', labelcolor='tab:red')
 
-    plt.title("Émissions CO₂ vs Pollution des sols au fil des années")
+    plt.title("Émissions de CO₂ (2020) vs Cas de maladies des sols (2023) par pays")
     plt.tight_layout()
     plt.grid(True)
     plt.show()
 
 if __name__ == "__main__":
-    # Chargement des données CO2 (corrigé)
-    df_co2 = pd.read_sql("SELECT annee, SUM(emmission_co2_t) AS emmission_co2_t FROM emmission_co2 GROUP BY annee", engine)
+
+    df_emmission_par_pays = pd.read_sql("SELECT p.id_pays, p.nom_pays, SUM(ec.emmission_co2_t) AS emmission_co2_t FROM emmission_co2 AS ec INNER JOIN pays AS p ON p.id_pays = ec.id_pays WHERE ec.annee = 2020 GROUP BY id_pays", engine)
 
     # Chargement des données de pollution des sols
-    df_sol = pd.read_sql("SELECT date_cas, concentration_polluant_mg_kg FROM maladie_sol", engine)
+    df_maladie_par_pays = pd.read_sql("SELECT p.id_pays, p.nom_pays, COUNT(id_cas) AS nombre_de_cas FROM maladie_sol AS ms INNER JOIN pays AS p ON p.id_pays = ms.id_pays WHERE EXTRACT(YEAR FROM ms.date_cas) = 2023 GROUP BY id_pays", engine)
 
     # Comparaison des données
-    comparer_co2_vs_pollution_sol(df_co2, df_sol)
+    comparer_nbmalade_pollution(df_maladie_par_pays, df_emmission_par_pays)
