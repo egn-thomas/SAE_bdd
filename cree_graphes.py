@@ -71,6 +71,20 @@ def hausse_du_co2(df_co2_par_pays, top_n=12):
     plt.tight_layout()
     plt.show()
 
+def co2_mondial_par_an(df_co2_par_an):
+
+    df_co2_par_an["annee"] = pd.to_datetime(df_co2_par_an["annee"], format='%Y')
+    df_co2_par_an.sort_values("annee", inplace=True)
+
+    plt.figure(figsize=(12, 6))
+    plt.plot(df_co2_par_an["annee"], df_co2_par_an["co2_mondial"], color="#074111")
+    plt.title("Évolution des émissions mondiales de CO₂ par an depuis 1760", fontsize=14)
+    plt.xlabel("Année")
+    plt.ylabel("Émissions de CO₂ (tonnes)")
+    plt.grid(True)
+    plt.xticks(rotation=45)
+    plt.tight_layout()
+    plt.show()
 
 
 
@@ -118,7 +132,15 @@ if __name__ == "__main__":
         GROUP BY p.nom_pays
         ORDER BY AVG(ec.emmission_co2_t) DESC;
         """, engine)
-
-
+    
+    df_co2_par_an = pd.read_sql("""
+        SELECT annee, SUM(emmission_co2_t) AS co2_mondial
+        FROM emmission_co2 AS ec
+        GROUP BY annee
+        ORDER BY annee;
+        """, engine)
+    
     # comparer_temperature_catastrophe(df_delta_temp_par_an, df_nbcatastrophe_par_an, 15)
     # hausse_du_co2(df_co2_par_pays)
+    co2_mondial_par_an(df_co2_par_an)
+
