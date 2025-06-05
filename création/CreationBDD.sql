@@ -130,3 +130,9 @@ CREATE TABLE mort_pollution_pays (
 	pol_air_interieur INT,
     FOREIGN KEY (id_pays) REFERENCES pays(id_pays)
 );
+
+-- création deces_canicule_france
+CREATE TABLE deces_canicule_france (
+	annee INT PRIMARY KEY,
+	deces INT
+);
