@@ -87,6 +87,52 @@ def co2_mondial_par_an(df_co2_par_an):
     plt.show()
 
 
+def graphique_co2_par_pays(df_france, df_allemagne, df_chine):
+    plt.figure(figsize=(12, 6))
+
+    plt.plot(df_france["annee"], df_france["co2_france"], label="France", color="#03A51E")
+    plt.plot(df_allemagne["annee"], df_allemagne["co2_allemagne"], label="Allemagne", color="#079DB1")
+    plt.plot(df_chine["annee"], df_chine["co2_chine"], label="Chine", color="#b61010")
+
+    plt.xlabel("Année")
+    plt.ylabel("Émissions de CO₂ (tonnes)")
+    plt.title("Évolution des émissions de CO₂ en France, Allemagne et Chine depuis 2000", fontsize=14)
+    plt.legend()
+    plt.grid(True)
+    plt.tight_layout()
+    plt.show()
+
+def graphique_temp_vs_co2(df_delta_temp_par_an, df_co2_par_an):
+    import matplotlib.pyplot as plt
+
+    # Assurez-vous que les années soient bien des entiers
+    df_delta_temp_par_an["annee"] = df_delta_temp_par_an["annee"].astype(int)
+    df_co2_par_an["annee"] = df_co2_par_an["annee"].astype(int)
+
+    # Fusionner les deux DataFrames sur l'année
+    df_merged = pd.merge(df_delta_temp_par_an, df_co2_par_an, on="annee", how="inner")
+    df_merged.sort_values("annee", inplace=True)
+
+    # Création du graphique
+    fig, ax1 = plt.subplots(figsize=(12, 6))
+
+    ax1.set_xlabel("Année")
+    ax1.set_ylabel("Variation moyenne de température (°C)", color="#ca3131")
+    ax1.plot(df_merged["annee"], df_merged["variation_temp"], color="#ca3131", marker="o", label="Température")
+    ax1.tick_params(axis='y', labelcolor="#ca3131")
+
+    ax2 = ax1.twinx()
+    ax2.set_ylabel("Émissions mondiales de CO₂ (tonnes)", color="#2ea810")
+    ax2.plot(df_merged["annee"], df_merged["co2_mondial"], color="#2ea810", marker="s", label="CO₂ mondial")
+    ax2.tick_params(axis='y', labelcolor="#2ea810")
+
+    plt.title("Évolution de la température moyenne et des émissions mondiales de CO₂")
+    plt.grid(True)
+    plt.tight_layout()
+    plt.show()
+
+
+
 
 if __name__ == "__main__":
 
@@ -140,7 +186,42 @@ if __name__ == "__main__":
         ORDER BY annee;
         """, engine)
     
+    df_co2_par_an_france = pd.read_sql("""
+        SELECT annee, SUM(emmission_co2_t) AS co2_france
+        FROM emmission_co2 AS ec
+        INNER JOIN pays AS p ON ec.id_pays = p.id_pays
+        WHERE p.nom_pays = 'France'
+        AND annee >= 2000
+        GROUP BY annee
+        ORDER BY annee;
+        """, engine)
+    
+    df_co2_par_an_allemagne = pd.read_sql("""
+        SELECT annee, SUM(emmission_co2_t) AS co2_allemagne
+        FROM emmission_co2 AS ec
+        INNER JOIN pays AS p ON ec.id_pays = p.id_pays
+        WHERE p.nom_pays = 'Allemagne'
+        AND annee >= 2000
+        GROUP BY annee
+        ORDER BY annee;
+        """, engine)
+    
+    df_co2_par_an_chine = pd.read_sql("""
+        SELECT annee, SUM(emmission_co2_t) AS co2_chine
+        FROM emmission_co2 AS ec
+        INNER JOIN pays AS p ON ec.id_pays = p.id_pays
+        WHERE p.nom_pays = 'Chine'
+        AND annee >= 2000
+        GROUP BY annee
+        ORDER BY annee;
+        """, engine)
+    
+
+    
     # comparer_temperature_catastrophe(df_delta_temp_par_an, df_nbcatastrophe_par_an, 15)
     # hausse_du_co2(df_co2_par_pays)
-    co2_mondial_par_an(df_co2_par_an)
+    # co2_mondial_par_an(df_co2_par_an)
+    # graphique_co2_par_pays(df_co2_par_an_france, df_co2_par_an_allemagne, df_co2_par_an_chine)
+    graphique_temp_vs_co2(df_delta_temp_par_an, df_co2_par_an)
+
 
