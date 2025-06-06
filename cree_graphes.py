@@ -141,7 +141,7 @@ if __name__ == "__main__":
 
     df_nbcatastrophe_par_an = pd.read_sql("""
         SELECT c.annee, COUNT(c.id_catastrophe) AS nombre_de_catastrophes
-        FROM catastrophe_naturel AS c
+        FROM catastrophe_naturelle AS c
         GROUP BY annee;
         """, engine)
     
